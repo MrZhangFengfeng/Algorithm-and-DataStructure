@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+	<meta charset="utf-8">
+</head>
+<body>
+	<script type="text/javascript">
+
+		/*
+			二分查找法用在有序序列中才快，如果用在无序序列中的话，你得先
+			排序再查找。这样反而耗时更多。
+		 */
+		var num = 1000000;
+		var randomNum = Math.ceil(Math.random()*num);
+		document.title = randomNum;
+		var arr = [];
+		for(var i=1;i<=num;i++){
+			arr.push(i);
+		}
+		arr.sort(function(n1,n2){
+			return n1 - n2;
+		});
+
+		function show1(arr,random){
+			console.time(1);
+			var head = 0;
+			var last = arr.length-1;
+			while(head<=last){
+				var middle = Math.floor((head + last)/2);
+				if( random < arr[middle] ){
+					last = middle - 1;
+				}
+				else if( random > arr[middle] ){
+					head = middle + 1;
+				}
+				else{
+					console.timeEnd(1);
+					return arr[middle];
+				}	
+			}
+		}
+
+		function show2(arr,random){
+			console.time(2);
+			for(var i=0;i<arr.length;i++){
+				if(arr[i] == random){
+					console.timeEnd(2);
+					return arr[i];
+				}	
+			}
+		}
+
+
+		console.log(show1(arr,randomNum));
+		console.log(show2(arr,randomNum));
+	</script>
+</body>
+</html>
