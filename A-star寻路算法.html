@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>A-star寻路算法</title>
+	<meta charset="utf-8">
+	<style type="text/css">
+		*{
+			margin:0;
+			padding: 0;
+		}
+		li{
+			list-style: none;
+		}
+		body{
+			position: relative;
+		}
+		#ul1{
+			overflow: hidden;
+			height: auto;
+			margin: 80px auto;
+			border-left: 1px solid #000;
+			border-top: 1px solid #000;
+		}
+		#ul1 li{
+			border-right: 1px solid #000;
+			border-bottom: 1px solid #000;
+			float: left;
+		}
+		#ul1 li.start{
+			background-color: red;
+		}
+		#ul1 li.end{
+			background-color: green;
+		}
+		#ul1 li.obstacle{
+			background-color: #ccc;
+		}
+		#btn{
+			width: 400px;
+			height: 40px;
+			margin: 10px auto;
+			position: absolute;
+			left:50%;
+			margin-left: -200px;
+		}
+	</style>
+</head>
+<body>
+	<ul id="ul1"></ul>
+	<input type="button" id="btn" name="start" value="开始寻路">
+	
+
+	<script type="text/javascript">
+		var oUl = document.getElementById('ul1');
+		var aLi = oUl.getElementsByTagName('li');
+		var oBtn = document.getElementById('btn');
+		var startNode = oUl.getElementsByClassName('start');
+		var endNode = oUl.getElementsByClassName('end');
+		var openArr = [];
+		var closeArr = [];
+
+		var map = [
+			0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+			0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,
+			0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,
+			0,0,0,0,1,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,
+			0,0,0,0,0,0,0,0,0,0,3,3,3,3,3,0,0,0,0,0,
+			0,0,0,0,3,3,3,3,0,0,0,0,0,0,3,0,0,0,0,0,
+			0,0,0,0,0,0,0,3,3,0,0,0,0,0,3,0,0,0,0,0,
+			0,0,0,0,0,0,0,0,3,3,3,3,3,3,3,0,0,0,0,0,
+			0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,
+			0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,
+			0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,
+			0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,
+			0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,
+			0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,
+			0,0,0,0,0,0,0,0,3,3,3,3,3,0,0,0,0,0,0,0,
+			0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,2,0,0,0,0,
+			0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,
+			0,0,0,0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,
+			0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+			0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+		];
+
+		var cols = Math.sqrt(map.length);
+		var sizeGird = 20;
+
+		init();
+
+		function init(){
+			createMap();
+			oBtn.onclick=function(){
+				open();
+			}
+		}
+		function createMap(){
+
+			oUl.style.width = cols * (sizeGird+1) +'px';
+
+			for(var i=0;i<map.length;i++){
+				var oLi = document.createElement('li');
+				oLi.style.width = sizeGird + 'px';
+				oLi.style.height = sizeGird + 'px';
+				oUl.appendChild(oLi);
+
+				if(map[i] == 1){
+					oLi.className = 'start';
+					openArr.push(oLi);
+
+				}else if(map[i] == 2){
+					oLi.className = 'end';
+					
+				}else if(map[i] == 3){
+					oLi.className = 'obstacle';
+					closeArr.push(oLi);
+				}
+			}
+		}
+
+		// 估价函数
+		// f(n) = g(n) + h(n)
+		// g(n)是出发节点到 n 节点的实际代价
+		// h(n)是n节点到目标节点的实际代价
+		
+		// A*算法程序实现
+		// - open队列
+		// 	排序预估函数
+		// - close队列
+		// 	排除干扰节点
+		// - 查询相邻位置
+
+		function open(){
+			var nowLi = openArr.shift();
+			if(nowLi == endNode[0]){
+				showLine();
+				return;
+			}
+
+			close(nowLi);
+			findLi(nowLi);
+
+			openArr.sort(function(li1,li2){
+				return li1.count - li2.count;
+			});	
+
+			// console.log(openArr);
+			open();	
+		}
+
+		function close(nowLi){
+			closeArr.push(nowLi);
+		}
+
+		function findLi(nowLi){
+			var result = [];
+			for(var i = 0; i<aLi.length;i++){
+				if(filter(aLi[i])){
+					result.push(aLi[i]);
+				}
+
+			}
+
+			function filter(li){
+				for(var i=0; i<closeArr.length;i++){
+					if(closeArr[i] == li){
+						return false;
+					}
+				}
+				for(var i=0;i<openArr.length;i++){
+					if(openArr[i] == li){
+						return false;
+					}
+				}
+				return true;
+			}
+
+			for(var i=0;i<result.length;i++){
+				if((Math.abs(nowLi.offsetLeft - result[i].offsetLeft)<=(sizeGird + 1)) &&
+				 (Math.abs(nowLi.offsetTop - result[i].offsetTop)<=(sizeGird + 1))){
+				 	result[i].count = f(result[i]);
+				 	result[i].parent = nowLi;
+					openArr.push(result[i]);
+				}
+			}
+		}
+
+
+		function f(nodeLi){
+			return g(nodeLi) + h(nodeLi);
+		}
+
+		function g(nodeLi){
+			var a = startNode[0].offsetLeft - nodeLi.offsetLeft;
+			var b = startNode[0].offsetTop - nodeLi.offsetTop;
+			return Math.sqrt(a*a + b*b);
+		}
+
+		function h(nodeLi){
+			var a = endNode[0].offsetLeft - nodeLi.offsetLeft;
+			var b = endNode[0].offsetTop - nodeLi.offsetTop;
+			return Math.sqrt(a*a + b*b);
+		}
+
+		function showLine(){
+			var lineResult = [];
+			var lastLi = closeArr.pop();
+			var iNow = 0;
+			findParent(lastLi);
+
+			function findParent(li){
+				lineResult.unshift(li);
+				if(li.parent == startNode[0]){
+					return;
+				}	
+				findParent(li.parent);			
+			}
+			var timer = setInterval(function(){
+					lineResult[iNow].style.background = 'red';
+					iNow++;
+					if(iNow==lineResult.length){
+						clearInterval(timer);
+					}
+			},500)
+		}
+	</script>
+</body>
+</html>
