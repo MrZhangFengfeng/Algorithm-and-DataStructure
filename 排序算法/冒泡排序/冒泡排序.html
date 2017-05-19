@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>冒泡排序</title>
+</head>
+<body>
+<script type="text/javascript">
+
+	var arr = [1,5,3,7,9,7,6,54,2,45,451];
+	console.log(bubbleSort(arr));
+
+	function swap(myArr,p1,p2){
+		var temp = myArr[p1];
+		myArr[p1] = myArr[p2];
+		myArr[p2] = temp;
+	}
+
+	function bubbleSort(myArr){
+		var len = myArr.length;
+		var i;
+		var j;
+		var stop;
+
+		for(i=0;i<len;i++){
+			for(j=0;stop = len-1-i,j<stop;j++){
+				if(myArr[j] > myArr[j+1]){
+					swap(myArr,j,j+1);
+				}
+			}
+		}
+		return myArr;
+	}
+</script>
+</body>
+</html>

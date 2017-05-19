@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>快速排序</title>
+</head>
+<body>
+	<script type="text/javascript">
+
+		var arr = [1,5,3,7,9,7,6,54,2,45,451];
+		console.log(quickSort(arr));
+		// 首先部署一个swap函数，用于互换两个位置的值。
+
+		function swap(myArray, firstIndex, secondIndex){
+		    var temp = myArray[firstIndex];
+		    myArray[firstIndex] = myArray[secondIndex];
+		    myArray[secondIndex] = temp;
+		}
+
+		// 然后，部署一个partition函数，用于完成一轮排序。
+
+		function partition(myArray, left, right) {
+		    var pivot   = myArray[Math.floor((right + left) / 2)],
+		        i       = left,
+		        j       = right;
+
+		    while (i <= j) {
+		        while (myArray[i] < pivot) {
+		            i++;
+		        }
+		        while (myArray[j] > pivot) {
+		            j--;
+		        }
+		        if (i <= j) {
+		            swap(myArray, i, j);
+		            i++;
+		            j--;
+		        }
+		    }
+		    return i;
+		}
+
+		// 接下来，就是递归上面的过程，完成整个排序。
+
+		function quickSort(myArray, left, right) {
+			if (myArray.length < 2) return myArray;
+			left = (typeof left !== "number" ? 0 : left);
+			right = (typeof right !== "number" ? myArray.length - 1 : right);
+			var index  = partition(myArray, left, right);
+
+			 if (left < index - 1) {
+		            quickSort(myArray, left, index - 1);
+		     }
+			 if (index < right) {
+		            quickSort(myArray, index, right);
+		      }
+			 return myArray;
+		}
+	</script>
+</body>
+</html>
